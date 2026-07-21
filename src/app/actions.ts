@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/db";
 import { tasks } from "@/db/schema";
 import { addDays, startOfWeek } from "@/lib/dates";
+import type { ParsedTask } from "@/lib/parsed-task";
 
 function refreshViews() {
   revalidatePath("/day");
@@ -105,5 +106,36 @@ export async function moveToNextWeek(formData: FormData) {
     })
     .where(eq(tasks.id, id));
 
+  refreshViews();
+}
+
+// Confirmed AI-parsed tasks, not yet pinned — the auto-scheduler (Phase 3) is
+// free to move these; only an explicit human move (above) locks them in place.
+export async function saveTasks(input: ParsedTask[]) {
+  const rows = input
+    .filter((t) => t.title.trim().length > 0)
+    .map((t) => {
+      const scheduledDate = t.scheduledDate
+        ? new Date(`${t.scheduledDate}T00:00:00.000Z`)
+        : null;
+
+      return {
+        title: t.title.trim(),
+        notes: t.notes?.trim() || null,
+        estimateMinutes: t.estimateMinutes ?? null,
+        priority: t.priority,
+        dueDate: t.dueDate ? new Date(`${t.dueDate}T00:00:00.000Z`) : null,
+        scheduledDate,
+        // Always re-derive from scheduledDate when present, rather than
+        // trusting the model's own arithmetic, so the two never disagree.
+        scheduledWeekStart: scheduledDate
+          ? startOfWeek(scheduledDate)
+          : new Date(`${t.scheduledWeekStart}T00:00:00.000Z`),
+      };
+    });
+
+  if (rows.length === 0) return;
+
+  await db.insert(tasks).values(rows);
   refreshViews();
 }

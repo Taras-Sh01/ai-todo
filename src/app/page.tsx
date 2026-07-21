@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
+import { CaptureForm } from "@/components/CaptureForm";
 
 export default function Home() {
-  redirect("/day");
+  return <CaptureForm />;
 }

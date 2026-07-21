@@ -31,9 +31,12 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <header className="border-b border-zinc-200 dark:border-zinc-800">
           <nav className="mx-auto flex w-full max-w-6xl items-center gap-4 px-6 py-3">
-            <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+            <Link
+              href="/"
+              className="text-sm font-semibold text-zinc-900 dark:text-zinc-50"
+            >
               AI Todo
-            </span>
+            </Link>
             <Link
               href="/day"
               className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
