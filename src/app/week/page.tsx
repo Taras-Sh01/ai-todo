@@ -1,9 +1,10 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import Link from "next/link";
 import { db } from "@/db";
 import { tasks, type Task } from "@/db/schema";
 import { TaskCard } from "@/components/TaskCard";
 import { addDays, formatISODate, isSameDate, startOfWeek, today as getToday } from "@/lib/dates";
+import { getVisitorId } from "@/lib/visitor";
 
 const DAY_LABELS = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Нд"];
 
@@ -17,10 +18,13 @@ export default async function WeekPage({
     ? startOfWeek(new Date(`${params.week}T00:00:00.000Z`))
     : startOfWeek(getToday());
 
-  const weekTasks = await db
-    .select()
-    .from(tasks)
-    .where(eq(tasks.scheduledWeekStart, weekStart));
+  const ownerId = await getVisitorId();
+  const weekTasks = ownerId
+    ? await db
+        .select()
+        .from(tasks)
+        .where(and(eq(tasks.scheduledWeekStart, weekStart), eq(tasks.ownerId, ownerId)))
+    : [];
 
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
   const unscheduled = weekTasks.filter((t) => !t.scheduledDate);

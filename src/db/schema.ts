@@ -13,6 +13,10 @@ export const priorityEnum = pgEnum("priority", ["low", "medium", "high"]);
 
 export const tasks = pgTable("tasks", {
   id: serial("id").primaryKey(),
+  // Opaque per-visitor id (cookie-based, no login) — every query and
+  // mutation must be scoped to this so different people never see each
+  // other's tasks. See src/lib/visitor.ts.
+  ownerId: text("owner_id").notNull(),
   title: text("title").notNull(),
   notes: text("notes"),
   estimateMinutes: integer("estimate_minutes"),

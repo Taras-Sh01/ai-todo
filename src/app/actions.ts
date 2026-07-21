@@ -1,11 +1,12 @@
 "use server";
 
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db } from "@/db";
 import { tasks } from "@/db/schema";
 import { addDays, startOfWeek } from "@/lib/dates";
 import type { ParsedTask } from "@/lib/parsed-task";
+import { getOrCreateVisitorId } from "@/lib/visitor";
 
 function refreshViews() {
   revalidatePath("/day");
@@ -18,26 +19,32 @@ function requireTaskId(formData: FormData): number {
   return id;
 }
 
+// Every mutation is scoped to (id AND ownerId) — not just id — so no one can
+// act on a task that isn't theirs even if they somehow know its numeric id.
 export async function toggleComplete(formData: FormData) {
   const id = requireTaskId(formData);
+  const ownerId = await getOrCreateVisitorId();
   const wasCompleted = formData.get("completed") === "true";
 
   await db
     .update(tasks)
     .set({ completed: !wasCompleted, updatedAt: new Date() })
-    .where(eq(tasks.id, id));
+    .where(and(eq(tasks.id, id), eq(tasks.ownerId, ownerId)));
 
   refreshViews();
 }
 
 export async function deleteTask(formData: FormData) {
   const id = requireTaskId(formData);
-  await db.delete(tasks).where(eq(tasks.id, id));
+  const ownerId = await getOrCreateVisitorId();
+
+  await db.delete(tasks).where(and(eq(tasks.id, id), eq(tasks.ownerId, ownerId)));
   refreshViews();
 }
 
 export async function updateTask(formData: FormData) {
   const id = requireTaskId(formData);
+  const ownerId = await getOrCreateVisitorId();
   const title = String(formData.get("title") ?? "").trim();
   if (!title) throw new Error("Title cannot be empty");
 
@@ -59,7 +66,7 @@ export async function updateTask(formData: FormData) {
       priority,
       updatedAt: new Date(),
     })
-    .where(eq(tasks.id, id));
+    .where(and(eq(tasks.id, id), eq(tasks.ownerId, ownerId)));
 
   refreshViews();
 }
@@ -67,6 +74,7 @@ export async function updateTask(formData: FormData) {
 // Move to a specific day (any week) — always pins the task.
 export async function moveToDate(formData: FormData) {
   const id = requireTaskId(formData);
+  const ownerId = await getOrCreateVisitorId();
   const dateStr = String(formData.get("date") ?? "");
   if (!dateStr) throw new Error("Missing date");
 
@@ -80,7 +88,7 @@ export async function moveToDate(formData: FormData) {
       pinned: true,
       updatedAt: new Date(),
     })
-    .where(eq(tasks.id, id));
+    .where(and(eq(tasks.id, id), eq(tasks.ownerId, ownerId)));
 
   refreshViews();
 }
@@ -89,7 +97,12 @@ export async function moveToDate(formData: FormData) {
 // it's an explicit human decision the scheduler must not override later.
 export async function moveToNextWeek(formData: FormData) {
   const id = requireTaskId(formData);
-  const [row] = await db.select().from(tasks).where(eq(tasks.id, id));
+  const ownerId = await getOrCreateVisitorId();
+
+  const [row] = await db
+    .select()
+    .from(tasks)
+    .where(and(eq(tasks.id, id), eq(tasks.ownerId, ownerId)));
   if (!row) throw new Error("Task not found");
 
   const currentWeekStart = row.scheduledWeekStart
@@ -104,7 +117,7 @@ export async function moveToNextWeek(formData: FormData) {
       pinned: true,
       updatedAt: new Date(),
     })
-    .where(eq(tasks.id, id));
+    .where(and(eq(tasks.id, id), eq(tasks.ownerId, ownerId)));
 
   refreshViews();
 }
@@ -112,6 +125,8 @@ export async function moveToNextWeek(formData: FormData) {
 // Confirmed AI-parsed tasks, not yet pinned — the auto-scheduler (Phase 3) is
 // free to move these; only an explicit human move (above) locks them in place.
 export async function saveTasks(input: ParsedTask[]) {
+  const ownerId = await getOrCreateVisitorId();
+
   const rows = input
     .filter((t) => t.title.trim().length > 0)
     .map((t) => {
@@ -120,6 +135,7 @@ export async function saveTasks(input: ParsedTask[]) {
         : null;
 
       return {
+        ownerId,
         title: t.title.trim(),
         notes: t.notes?.trim() || null,
         estimateMinutes: t.estimateMinutes ?? null,

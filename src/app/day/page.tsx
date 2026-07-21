@@ -1,9 +1,10 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import Link from "next/link";
 import { db } from "@/db";
 import { tasks } from "@/db/schema";
 import { TaskCard } from "@/components/TaskCard";
 import { addDays, formatISODate, today as getToday } from "@/lib/dates";
+import { getVisitorId } from "@/lib/visitor";
 
 const WEEKDAY_LABELS = [
   "неділя",
@@ -27,7 +28,13 @@ export default async function DayPage({
     ? new Date(`${params.date}T00:00:00.000Z`)
     : getToday();
 
-  const dayTasks = await db.select().from(tasks).where(eq(tasks.scheduledDate, date));
+  const ownerId = await getVisitorId();
+  const dayTasks = ownerId
+    ? await db
+        .select()
+        .from(tasks)
+        .where(and(eq(tasks.scheduledDate, date), eq(tasks.ownerId, ownerId)))
+    : [];
 
   const sorted = [...dayTasks].sort((a, b) => {
     if (a.completed !== b.completed) return a.completed ? 1 : -1;

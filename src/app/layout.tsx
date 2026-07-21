@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
+import { getVisitorId } from "@/lib/visitor";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -18,11 +19,13 @@ export const metadata: Metadata = {
   description: "AI-планер задач: диктуй або пиши, він побудує план на день і тиждень.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const visitorId = await getVisitorId();
+
   return (
     <html
       lang="uk"
@@ -49,6 +52,14 @@ export default function RootLayout({
             >
               Тиждень
             </Link>
+            {visitorId && (
+              <span
+                className="ml-auto text-xs text-zinc-400 dark:text-zinc-600"
+                title="Твої задачі бачиш тільки ти — інші люди мають свою окрему сесію"
+              >
+                Сесія {visitorId.slice(0, 6)}
+              </span>
+            )}
           </nav>
         </header>
         <div className="flex flex-1 flex-col">{children}</div>
