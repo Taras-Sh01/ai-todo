@@ -9,4 +9,7 @@ if (!databaseUrl) {
   );
 }
 
-export const db = drizzle(postgres(databaseUrl), { schema });
+// prepare: false — required for compatibility with pooled connections
+// (PgBouncer transaction mode, e.g. Neon's default DATABASE_URL). Harmless
+// against a direct/unpooled connection too.
+export const db = drizzle(postgres(databaseUrl, { prepare: false }), { schema });
