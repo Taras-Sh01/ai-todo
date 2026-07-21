@@ -1,7 +1,12 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { and, eq, gte, isNotNull, lte } from "drizzle-orm";
 import { NextResponse } from "next/server";
-import { formatISODate, startOfWeek, today as getToday } from "@/lib/dates";
+import { db } from "@/db";
+import { tasks as tasksTable } from "@/db/schema";
+import { addDays, formatISODate, startOfWeek, today as getToday } from "@/lib/dates";
 import { normalizeParsedTasks } from "@/lib/parsed-task";
+import { DEFAULT_ESTIMATE_MINUTES, MAX_LOOKAHEAD_DAYS, scheduleTasks } from "@/lib/schedule";
+import { getOrCreateVisitorId } from "@/lib/visitor";
 
 const TASKS_TOOL: Anthropic.Tool = {
   name: "extracted_tasks",
@@ -113,6 +118,38 @@ export async function POST(request: Request) {
     );
   }
 
-  const tasks = normalizeParsedTasks(toolUse.input, weekStartIso);
-  return NextResponse.json({ tasks });
+  const parsedTasks = normalizeParsedTasks(toolUse.input, weekStartIso);
+
+  // Existing incomplete tasks' load, so auto-placement doesn't overload a day
+  // that's already busy with previously-saved tasks.
+  const ownerId = await getOrCreateVisitorId();
+  const windowEnd = addDays(today, MAX_LOOKAHEAD_DAYS);
+  const existingRows = await db
+    .select({
+      scheduledDate: tasksTable.scheduledDate,
+      estimateMinutes: tasksTable.estimateMinutes,
+    })
+    .from(tasksTable)
+    .where(
+      and(
+        eq(tasksTable.ownerId, ownerId),
+        eq(tasksTable.completed, false),
+        isNotNull(tasksTable.scheduledDate),
+        gte(tasksTable.scheduledDate, today),
+        lte(tasksTable.scheduledDate, windowEnd),
+      ),
+    );
+
+  const existingLoad = new Map<string, number>();
+  for (const row of existingRows) {
+    if (!row.scheduledDate) continue;
+    const key = formatISODate(row.scheduledDate);
+    existingLoad.set(
+      key,
+      (existingLoad.get(key) ?? 0) + (row.estimateMinutes ?? DEFAULT_ESTIMATE_MINUTES),
+    );
+  }
+
+  const scheduled = scheduleTasks(parsedTasks, existingLoad);
+  return NextResponse.json({ tasks: scheduled });
 }
