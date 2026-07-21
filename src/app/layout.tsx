@@ -41,16 +41,16 @@ export default async function RootLayout({
               AI Todo
             </Link>
             <Link
-              href="/day"
+              href="/today"
               className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
             >
-              День
+              Сьогодні
             </Link>
             <Link
-              href="/week"
+              href="/upcoming"
               className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
             >
-              Тиждень
+              Найближчі
             </Link>
             {visitorId && (
               <span

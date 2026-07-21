@@ -4,13 +4,13 @@ import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db } from "@/db";
 import { tasks } from "@/db/schema";
-import { addDays, startOfWeek } from "@/lib/dates";
+import { startOfWeek } from "@/lib/dates";
 import type { ParsedTask } from "@/lib/parsed-task";
 import { getOrCreateVisitorId } from "@/lib/visitor";
 
 function refreshViews() {
-  revalidatePath("/day");
-  revalidatePath("/week");
+  revalidatePath("/today");
+  revalidatePath("/upcoming");
 }
 
 function requireTaskId(formData: FormData): number {
@@ -93,37 +93,8 @@ export async function moveToDate(formData: FormData) {
   refreshViews();
 }
 
-// Quick action: bump to next week, no specific day yet — still pinned, since
-// it's an explicit human decision the scheduler must not override later.
-export async function moveToNextWeek(formData: FormData) {
-  const id = requireTaskId(formData);
-  const ownerId = await getOrCreateVisitorId();
-
-  const [row] = await db
-    .select()
-    .from(tasks)
-    .where(and(eq(tasks.id, id), eq(tasks.ownerId, ownerId)));
-  if (!row) throw new Error("Task not found");
-
-  const currentWeekStart = row.scheduledWeekStart
-    ? new Date(row.scheduledWeekStart)
-    : startOfWeek(new Date());
-
-  await db
-    .update(tasks)
-    .set({
-      scheduledDate: null,
-      scheduledWeekStart: addDays(currentWeekStart, 7),
-      pinned: true,
-      updatedAt: new Date(),
-    })
-    .where(and(eq(tasks.id, id), eq(tasks.ownerId, ownerId)));
-
-  refreshViews();
-}
-
-// Confirmed AI-parsed tasks, not yet pinned — the auto-scheduler (Phase 3) is
-// free to move these; only an explicit human move (above) locks them in place.
+// Confirmed AI-parsed tasks, not yet pinned — the auto-scheduler is free to
+// move these; only an explicit human move (above) locks them in place.
 export async function saveTasks(input: ParsedTask[]) {
   const ownerId = await getOrCreateVisitorId();
 

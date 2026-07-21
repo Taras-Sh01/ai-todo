@@ -32,3 +32,28 @@ export function isSameDate(a: Date, b: Date): boolean {
 export function formatISODate(date: Date): string {
   return date.toISOString().slice(0, 10);
 }
+
+export const WEEKDAY_LABELS = [
+  "неділя",
+  "понеділок",
+  "вівторок",
+  "середа",
+  "четвер",
+  "п'ятниця",
+  "субота",
+];
+
+export const MONTH_LABELS_GENITIVE = [
+  "січня",
+  "лютого",
+  "березня",
+  "квітня",
+  "травня",
+  "червня",
+  "липня",
+  "серпня",
+  "вересня",
+  "жовтня",
+  "листопада",
+  "грудня",
+];

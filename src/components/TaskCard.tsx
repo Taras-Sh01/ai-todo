@@ -1,11 +1,5 @@
 import type { Task } from "@/db/schema";
-import {
-  deleteTask,
-  moveToDate,
-  moveToNextWeek,
-  toggleComplete,
-  updateTask,
-} from "@/app/actions";
+import { deleteTask, moveToDate, toggleComplete, updateTask } from "@/app/actions";
 
 const PRIORITY_LABEL: Record<Task["priority"], string> = {
   low: "Низький",
@@ -131,32 +125,24 @@ export function TaskCard({ task }: { task: Task }) {
               <summary className="cursor-pointer text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200">
                 Перенести
               </summary>
-              <div className="mt-2 flex flex-wrap items-center gap-2 rounded-md bg-zinc-50 p-2 dark:bg-zinc-900">
-                <form action={moveToDate} className="flex items-center gap-2">
-                  <input type="hidden" name="taskId" value={task.id} />
-                  <input
-                    type="date"
-                    name="date"
-                    required
-                    className="rounded border border-zinc-300 bg-white px-2 py-1 text-sm dark:border-zinc-700 dark:bg-zinc-950"
-                  />
-                  <button
-                    type="submit"
-                    className="rounded bg-zinc-900 px-3 py-1 text-white dark:bg-zinc-50 dark:text-zinc-900"
-                  >
-                    На дату
-                  </button>
-                </form>
-                <form action={moveToNextWeek}>
-                  <input type="hidden" name="taskId" value={task.id} />
-                  <button
-                    type="submit"
-                    className="rounded border border-zinc-300 px-3 py-1 text-zinc-700 dark:border-zinc-700 dark:text-zinc-300"
-                  >
-                    На наступний тиждень
-                  </button>
-                </form>
-              </div>
+              <form
+                action={moveToDate}
+                className="mt-2 flex items-center gap-2 rounded-md bg-zinc-50 p-2 dark:bg-zinc-900"
+              >
+                <input type="hidden" name="taskId" value={task.id} />
+                <input
+                  type="date"
+                  name="date"
+                  required
+                  className="rounded border border-zinc-300 bg-white px-2 py-1 text-sm dark:border-zinc-700 dark:bg-zinc-950"
+                />
+                <button
+                  type="submit"
+                  className="rounded bg-zinc-900 px-3 py-1 text-white dark:bg-zinc-50 dark:text-zinc-900"
+                >
+                  Перенести
+                </button>
+              </form>
             </details>
 
             <form action={deleteTask}>
