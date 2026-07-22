@@ -75,7 +75,7 @@ export default async function UpcomingPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-6 py-6 sm:py-10">
-      <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">Найближчі</h1>
+      <h1 className="text-lg font-semibold text-accent-upcoming transition-colors duration-300">Найближчі</h1>
 
       {orderedKeys.length === 0 ? (
         <EmptyState message="Немає запланованих задач.">

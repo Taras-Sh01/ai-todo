@@ -37,7 +37,7 @@ export function CaptureForm() {
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-6 py-8 sm:py-16">
-      <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
+      <h1 className="text-2xl font-semibold text-accent transition-colors duration-300">
         Що потрібно зробити?
       </h1>
       <p className="text-sm text-zinc-500 dark:text-zinc-400">

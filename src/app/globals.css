@@ -1,5 +1,16 @@
 @import "tailwindcss";
 
+/* Without this, Tailwind v4's `dark:` variant defaults to pure
+   prefers-color-scheme — meaning every hardcoded `dark:*` utility class
+   across the app (zinc text/border shades, mostly) would ignore the manual
+   ThemeToggle entirely and only ever follow the OS setting. Tying it to
+   [data-theme="dark"] instead makes it agree with the CSS variables above,
+   which already key off the same attribute. The inline script in
+   layout.tsx guarantees that attribute is always resolved (explicit cookie
+   or, failing that, matchMedia) before first paint, so this is safe even
+   for a first-time visitor with no cookie yet. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -11,6 +22,13 @@
      AA for button text). --accent itself stays reserved for text-on-page
      contexts (active nav state), where it's tuned per-mode instead. */
   --accent-solid: #4f46e5;
+  /* Per-section identity accents — Сьогодні/Найближчі tabs, used for their
+     nav label and page heading only (not task-card body text, which stays
+     neutral so dense lists remain scannable). Chosen to stay clear of the
+     priority/status palette already in use elsewhere (red = overdue/high,
+     amber = medium, emerald = completed). */
+  --accent-today: #0d9488;
+  --accent-upcoming: #2563eb;
 
   --glass-nav-bg: rgba(255, 255, 255, 0.72);
   --glass-nav-border: rgba(24, 24, 27, 0.08);
@@ -24,15 +42,23 @@
   --color-foreground: var(--foreground);
   --color-accent: var(--accent);
   --color-accent-solid: var(--accent-solid);
+  --color-accent-today: var(--accent-today);
+  --color-accent-upcoming: var(--accent-upcoming);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
+/* OS-level default when the visitor hasn't made an explicit choice yet
+   (:root without a data-theme attribute). An explicit [data-theme="light"]
+   (see below) wins over this regardless of OS preference, since an
+   attribute selector always out-specifies a bare :root. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --background: #0a0a0a;
     --foreground: #ededed;
     --accent: #818cf8;
+    --accent-today: #2dd4bf;
+    --accent-upcoming: #60a5fa;
 
     --glass-nav-bg: rgba(10, 10, 10, 0.72);
     --glass-nav-border: rgba(255, 255, 255, 0.08);
@@ -42,10 +68,29 @@
   }
 }
 
+/* Explicit choice from the ThemeToggle, persisted in a cookie and applied
+   as a data-theme attribute on <html> by RootLayout (server-rendered, so
+   there's no flash of the wrong theme on load). */
+:root[data-theme="dark"] {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --accent: #818cf8;
+  --accent-today: #2dd4bf;
+  --accent-upcoming: #60a5fa;
+
+  --glass-nav-bg: rgba(10, 10, 10, 0.72);
+  --glass-nav-border: rgba(255, 255, 255, 0.08);
+  --glass-nav-highlight: rgba(255, 255, 255, 0.08);
+  --glass-card-bg: rgba(24, 24, 27, 0.85);
+  --glass-card-border: rgba(255, 255, 255, 0.08);
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 /* Wrapped in the same `components` layer Tailwind v4 reserves for exactly
