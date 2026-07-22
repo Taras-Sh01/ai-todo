@@ -5,6 +5,7 @@ import { tasks } from "@/db/schema";
 import { TaskCard } from "@/components/TaskCard";
 import { EmptyState } from "@/components/EmptyState";
 import { MONTH_LABELS_GENITIVE, WEEKDAY_LABELS, today as getToday } from "@/lib/dates";
+import { rolloverOverdueTasks } from "@/lib/rollover";
 import { getVisitorId } from "@/lib/visitor";
 
 const PRIORITY_WEIGHT = { high: 0, medium: 1, low: 2 } as const;
@@ -12,6 +13,7 @@ const PRIORITY_WEIGHT = { high: 0, medium: 1, low: 2 } as const;
 export default async function TodayPage() {
   const date = getToday();
   const ownerId = await getVisitorId();
+  if (ownerId) await rolloverOverdueTasks(ownerId);
 
   const dayTasks = ownerId
     ? await db
