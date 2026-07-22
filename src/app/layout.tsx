@@ -6,6 +6,7 @@ import { getVisitorId } from "@/lib/visitor";
 import { getTheme } from "@/lib/theme";
 import { BottomTabBar, TopNavLinks } from "@/components/SiteNav";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { DeleteUndoProvider } from "@/components/DeleteUndoProvider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -60,35 +61,37 @@ export default async function RootLayout({
             } catch (e) {}
           })();`}
         </Script>
-        <header className="glass-nav sticky top-0 z-40 border-b border-[var(--glass-nav-border)]">
-          <nav
-            aria-label="Верхня навігація"
-            className="mx-auto flex w-full max-w-6xl items-center gap-4 px-6 py-3"
-          >
-            <Link
-              href="/"
-              className="text-sm font-semibold text-zinc-900 dark:text-zinc-50"
+        <DeleteUndoProvider>
+          <header className="glass-nav sticky top-0 z-40 border-b border-[var(--glass-nav-border)]">
+            <nav
+              aria-label="Верхня навігація"
+              className="mx-auto flex w-full max-w-6xl items-center gap-4 px-6 py-3"
             >
-              AI Todo
-            </Link>
-            <TopNavLinks />
-            <div className="ml-auto flex items-center gap-1">
-              {visitorId && (
-                <span
-                  className="text-xs text-zinc-400 dark:text-zinc-600"
-                  title="Твої задачі бачиш тільки ти — інші люди мають свою окрему сесію"
-                >
-                  Сесія {visitorId.slice(0, 6)}
-                </span>
-              )}
-              <ThemeToggle initialTheme={theme} />
-            </div>
-          </nav>
-        </header>
-        <div className="flex flex-1 flex-col pb-[calc(3.5rem+env(safe-area-inset-bottom))] sm:pb-0">
-          {children}
-        </div>
-        <BottomTabBar />
+              <Link
+                href="/"
+                className="text-sm font-semibold text-zinc-900 dark:text-zinc-50"
+              >
+                AI Todo
+              </Link>
+              <TopNavLinks />
+              <div className="ml-auto flex items-center gap-1">
+                {visitorId && (
+                  <span
+                    className="text-xs text-zinc-400 dark:text-zinc-600"
+                    title="Твої задачі бачиш тільки ти — інші люди мають свою окрему сесію"
+                  >
+                    Сесія {visitorId.slice(0, 6)}
+                  </span>
+                )}
+                <ThemeToggle initialTheme={theme} />
+              </div>
+            </nav>
+          </header>
+          <div className="flex flex-1 flex-col pb-[calc(3.5rem+env(safe-area-inset-bottom))] sm:pb-0">
+            {children}
+          </div>
+          <BottomTabBar />
+        </DeleteUndoProvider>
       </body>
     </html>
   );

@@ -3,6 +3,7 @@ import { and, eq, gte, or } from "drizzle-orm";
 import { db } from "@/db";
 import { tasks, type Task } from "@/db/schema";
 import { TaskCard } from "@/components/TaskCard";
+import { TaskCardSlot } from "@/components/TaskCardSlot";
 import { EmptyState } from "@/components/EmptyState";
 import {
   MONTH_LABELS_GENITIVE,
@@ -132,7 +133,9 @@ export default async function UpcomingPage() {
                   </h3>
                   <ul className="flex flex-col gap-2">
                     {dayGroups.get(key)!.map((task) => (
-                      <TaskCard key={task.id} task={task} />
+                      <TaskCardSlot key={task.id} taskId={task.id}>
+                        <TaskCard task={task} />
+                      </TaskCardSlot>
                     ))}
                   </ul>
                 </div>
@@ -147,7 +150,9 @@ export default async function UpcomingPage() {
               </h2>
               <ul className="flex flex-col gap-2">
                 {unscheduled.map((task) => (
-                  <TaskCard key={task.id} task={task} />
+                  <TaskCardSlot key={task.id} taskId={task.id}>
+                    <TaskCard task={task} />
+                  </TaskCardSlot>
                 ))}
               </ul>
             </section>

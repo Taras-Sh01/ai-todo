@@ -1,5 +1,6 @@
 import type { Task } from "@/db/schema";
-import { deleteTask, moveToDate, toggleComplete, updateTask } from "@/app/actions";
+import { moveToDate, toggleComplete, updateTask } from "@/app/actions";
+import { DeleteTaskButton } from "@/components/DeleteTaskButton";
 import { addDays, formatISODate, today } from "@/lib/dates";
 
 const PRIORITY_LABEL: Record<Task["priority"], string> = {
@@ -159,15 +160,7 @@ export function TaskCard({ task }: { task: Task }) {
               </div>
             </details>
 
-            <form action={deleteTask}>
-              <input type="hidden" name="taskId" value={task.id} />
-              <button
-                type="submit"
-                className="inline-flex min-h-11 items-center rounded-lg px-2 text-zinc-400 hover:bg-black/5 hover:text-red-500 dark:text-zinc-500 dark:hover:bg-white/5 dark:hover:text-red-400"
-              >
-                Видалити
-              </button>
-            </form>
+            <DeleteTaskButton taskId={task.id} title={task.title} />
           </div>
         </div>
       </div>

@@ -3,6 +3,7 @@ import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { tasks } from "@/db/schema";
 import { TaskCard } from "@/components/TaskCard";
+import { TaskCardSlot } from "@/components/TaskCardSlot";
 import { EmptyState } from "@/components/EmptyState";
 import { MONTH_LABELS_GENITIVE, WEEKDAY_LABELS, today as getToday } from "@/lib/dates";
 import { rolloverOverdueTasks } from "@/lib/rollover";
@@ -49,7 +50,9 @@ export default async function TodayPage() {
       ) : (
         <ul className="flex flex-col gap-2">
           {sorted.map((task) => (
-            <TaskCard key={task.id} task={task} />
+            <TaskCardSlot key={task.id} taskId={task.id}>
+              <TaskCard task={task} />
+            </TaskCardSlot>
           ))}
         </ul>
       )}

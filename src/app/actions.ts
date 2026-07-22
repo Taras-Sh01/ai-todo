@@ -34,8 +34,10 @@ export async function toggleComplete(formData: FormData) {
   refreshViews();
 }
 
-export async function deleteTask(formData: FormData) {
-  const id = requireTaskId(formData);
+// Called directly from client code (DeleteUndoProvider), not from a form —
+// the delete button defers this call for a few seconds so the user can
+// undo, so there's no plain <form action> for it to back.
+export async function deleteTaskById(id: number) {
   const ownerId = await getOrCreateVisitorId();
 
   await db.delete(tasks).where(and(eq(tasks.id, id), eq(tasks.ownerId, ownerId)));
