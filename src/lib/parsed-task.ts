@@ -1,3 +1,5 @@
+import { WEEKDAY_LABELS } from "./dates";
+
 export interface ParsedTask {
   title: string;
   notes: string | null;
@@ -5,6 +7,10 @@ export interface ParsedTask {
   priority: "low" | "medium" | "high";
   dueDate: string | null; // YYYY-MM-DD
   scheduledDate: string | null; // YYYY-MM-DD
+  // Set only when the text implies a recurring/unanchored weekday (e.g.
+  // "щопонеділка") that scheduleTasks() must resolve to a real date —
+  // mutually exclusive with scheduledDate.
+  impliedWeekday: string | null;
   scheduledWeekStart: string; // YYYY-MM-DD, Monday of the target week
 }
 
@@ -41,6 +47,10 @@ export function normalizeParsedTasks(input: unknown, fallbackWeekStart: string):
         priority,
         dueDate: asDateStringOrNull(t.dueDate),
         scheduledDate: asDateStringOrNull(t.scheduledDate),
+        impliedWeekday:
+          typeof t.impliedWeekday === "string" && WEEKDAY_LABELS.includes(t.impliedWeekday)
+            ? t.impliedWeekday
+            : null,
         scheduledWeekStart: asDateStringOrNull(t.scheduledWeekStart) ?? fallbackWeekStart,
       };
     })

@@ -3,7 +3,7 @@ import { and, eq, gte, isNotNull, lte } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { tasks as tasksTable } from "@/db/schema";
-import { addDays, formatISODate, startOfWeek, today as getToday } from "@/lib/dates";
+import { WEEKDAY_LABELS, addDays, formatISODate, startOfWeek, today as getToday } from "@/lib/dates";
 import { normalizeParsedTasks } from "@/lib/parsed-task";
 import { DEFAULT_ESTIMATE_MINUTES, MAX_LOOKAHEAD_DAYS, scheduleTasks } from "@/lib/schedule";
 import { getOrCreateVisitorId } from "@/lib/visitor";
@@ -37,6 +37,16 @@ const TASKS_TOOL: Anthropic.Tool = {
             scheduledDate: {
               type: ["string", "null"],
               description: "YYYY-MM-DD specific day, only if a specific day is implied, else null.",
+            },
+            impliedWeekday: {
+              type: ["string", "null"],
+              enum: [...WEEKDAY_LABELS, null],
+              description:
+                "Якщо в тексті названо день тижня, але НЕ можна/не варто визначити " +
+                "одну конкретну дату — типово через повторювану фразу ('щопонеділка', " +
+                "'щотижня у четвер', 'по пʼятницях') — постав сюди назву цього дня " +
+                "тижня. Якщо для задачі вже визначена конкретна scheduledDate, це " +
+                "поле лишається null.",
             },
             scheduledWeekStart: {
               type: "string",
@@ -95,6 +105,7 @@ export async function POST(request: Request) {
 - Якщо в тексті явно згадано конкретний день ("завтра", "у п'ятницю", "20 числа") — постав scheduledDate (YYYY-MM-DD) і scheduledWeekStart (понеділок того тижня).
 - Якщо йдеться про дедлайн — постав ще й dueDate.
 - Якщо конкретного дня немає, але з тексту зрозуміло, що це поточний тиждень (або взагалі без прив'язки до часу) — постав тільки scheduledWeekStart (${weekStartIso}), а scheduledDate залиш null.
+- Якщо день тижня згаданий у повторюваному контексті (наприклад "щопонеділка", "щотижня у вівторок", "по пʼятницях") і немає жодної конкретної календарної дати — НЕ став scheduledDate сам; постав замість неї impliedWeekday з назвою цього дня. scheduledDate і impliedWeekday ніколи не заповнені одночасно.
 - scheduledWeekStart обов'язковий завжди.
 - Назви задач пиши тією ж мовою, що й вхідний текст.`,
       messages: [{ role: "user", content: text }],

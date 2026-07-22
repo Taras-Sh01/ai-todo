@@ -43,6 +43,18 @@ export const WEEKDAY_LABELS = [
   "субота",
 ];
 
+// Resolves a recurring/unanchored weekday name (e.g. from a phrase like
+// "щопонеділка" with no calendar date attached) to the nearest date on or
+// after `from` that falls on that weekday — `from` itself if it already
+// matches. Kept deterministic/off the LLM for the same predictability
+// reason the rest of scheduling is (see src/lib/schedule.ts).
+export function nextOrTodayWeekday(from: Date, weekdayLabel: string): Date {
+  const targetIndex = WEEKDAY_LABELS.indexOf(weekdayLabel);
+  if (targetIndex === -1) return from;
+  const diff = (targetIndex - from.getUTCDay() + 7) % 7;
+  return addDays(from, diff);
+}
+
 export const MONTH_LABELS_GENITIVE = [
   "січня",
   "лютого",

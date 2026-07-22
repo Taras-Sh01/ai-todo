@@ -1,4 +1,4 @@
-import { addDays, formatISODate, startOfWeek, today as getToday } from "./dates";
+import { addDays, formatISODate, nextOrTodayWeekday, startOfWeek, today as getToday } from "./dates";
 import type { ParsedTask } from "./parsed-task";
 
 export const WEEKDAY_CAPACITY_MINUTES = 6 * 60;
@@ -28,6 +28,24 @@ export function scheduleTasks(
   parsedTasks: ParsedTask[],
   existingLoadMinutes: Map<string, number>,
 ): ParsedTask[] {
+  const today = getToday();
+
+  // Resolve recurring/unanchored weekday mentions (e.g. "щопонеділка") to a
+  // real date before anything else — deterministically, not via the LLM's
+  // own date arithmetic, for the same predictability reason the rest of
+  // this function stays off the LLM. Once resolved, these behave exactly
+  // like any other explicit scheduledDate below (fixed placement, no
+  // capacity gating): the named weekday outranks load-balancing.
+  const resolved = parsedTasks.map((t) => {
+    if (t.scheduledDate || !t.impliedWeekday) return t;
+    const date = nextOrTodayWeekday(today, t.impliedWeekday);
+    return {
+      ...t,
+      scheduledDate: formatISODate(date),
+      scheduledWeekStart: formatISODate(startOfWeek(date)),
+    };
+  });
+
   const load = new Map(existingLoadMinutes);
 
   function remainingCapacity(date: Date): number {
@@ -44,7 +62,7 @@ export function scheduleTasks(
   const fixed: ParsedTask[] = [];
   const needsPlacement: ParsedTask[] = [];
 
-  for (const t of parsedTasks) {
+  for (const t of resolved) {
     if (t.scheduledDate) {
       fixed.push(t);
       addLoad(new Date(`${t.scheduledDate}T00:00:00.000Z`), t.estimateMinutes ?? DEFAULT_ESTIMATE_MINUTES);
@@ -60,8 +78,6 @@ export function scheduleTasks(
     if (b.dueDate) return 1;
     return PRIORITY_WEIGHT[a.priority] - PRIORITY_WEIGHT[b.priority];
   });
-
-  const today = getToday();
 
   const placed = sorted.map((t) => {
     const minutes = t.estimateMinutes ?? DEFAULT_ESTIMATE_MINUTES;
