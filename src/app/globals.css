@@ -3,11 +3,27 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --accent: #4f46e5;
+  /* Constant across both modes, unlike --accent — this is always a solid
+     fill with white text on top, so it needs to stay dark/saturated enough
+     for that contrast regardless of the surrounding page's light/dark mode
+     (white-on-#818cf8, the dark-mode --accent, is only ~3:1 and fails WCAG
+     AA for button text). --accent itself stays reserved for text-on-page
+     contexts (active nav state), where it's tuned per-mode instead. */
+  --accent-solid: #4f46e5;
+
+  --glass-nav-bg: rgba(255, 255, 255, 0.72);
+  --glass-nav-border: rgba(24, 24, 27, 0.08);
+  --glass-nav-highlight: rgba(255, 255, 255, 0.6);
+  --glass-card-bg: rgba(255, 255, 255, 0.85);
+  --glass-card-border: rgba(24, 24, 27, 0.08);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-accent: var(--accent);
+  --color-accent-solid: var(--accent-solid);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -16,6 +32,13 @@
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --accent: #818cf8;
+
+    --glass-nav-bg: rgba(10, 10, 10, 0.72);
+    --glass-nav-border: rgba(255, 255, 255, 0.08);
+    --glass-nav-highlight: rgba(255, 255, 255, 0.08);
+    --glass-card-bg: rgba(24, 24, 27, 0.85);
+    --glass-card-border: rgba(255, 255, 255, 0.08);
   }
 }
 
@@ -23,4 +46,52 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Wrapped in the same `components` layer Tailwind v4 reserves for exactly
+   this purpose: plain CSS written after `@import "tailwindcss"` without a
+   `@layer` is otherwise "unlayered" and would beat every Tailwind utility
+   regardless of source order (e.g. a per-instance `border-l-red-500` could
+   never win over this class's own `border-color`). Inside `components`,
+   the `utilities` layer that Tailwind's own classes live in still wins,
+   which is what lets callers override one side/property per instance. */
+@layer components {
+  /* Liquid-glass "functional layer": nav bars/toolbars. Stronger blur, more
+     translucent — content is meant to visibly pass beneath it. */
+  .glass-nav {
+    background: var(--glass-nav-bg);
+    border-color: var(--glass-nav-border);
+    box-shadow: inset 0 1px 0 var(--glass-nav-highlight);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(20px) saturate(180%);
+  }
+
+  /* Liquid-glass "content" surface: task cards, capture panel. Lighter
+     blur, more opaque so list text stays legible over whatever scrolls
+     behind it. */
+  .glass-card {
+    background: var(--glass-card-bg);
+    border-color: var(--glass-card-border);
+    box-shadow:
+      inset 0 1px 0 var(--glass-nav-highlight),
+      0 8px 30px rgba(0, 0, 0, 0.06);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
+    backdrop-filter: blur(12px) saturate(150%);
+  }
+
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .glass-nav,
+    .glass-card {
+      background: var(--background);
+    }
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    .glass-nav,
+    .glass-card {
+      background: var(--background);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+  }
 }

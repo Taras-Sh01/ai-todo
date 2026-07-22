@@ -1,7 +1,9 @@
+import Link from "next/link";
 import { and, eq, gte, or } from "drizzle-orm";
 import { db } from "@/db";
 import { tasks, type Task } from "@/db/schema";
 import { TaskCard } from "@/components/TaskCard";
+import { EmptyState } from "@/components/EmptyState";
 import {
   MONTH_LABELS_GENITIVE,
   WEEKDAY_LABELS,
@@ -76,9 +78,11 @@ export default async function UpcomingPage() {
       <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">Найближчі</h1>
 
       {orderedKeys.length === 0 ? (
-        <p className="mt-8 text-center text-sm text-zinc-400 dark:text-zinc-500">
-          Немає запланованих задач.
-        </p>
+        <EmptyState message="Немає запланованих задач.">
+          <Link href="/" className="text-sm font-medium text-accent hover:underline">
+            Додати задачу
+          </Link>
+        </EmptyState>
       ) : (
         orderedKeys.map((key) => (
           <section key={key} className="flex flex-col gap-2">

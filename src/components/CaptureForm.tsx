@@ -50,14 +50,14 @@ export function CaptureForm() {
         onChange={(e) => setText(e.target.value)}
         rows={6}
         placeholder="Наприклад: завтра подзвонити клієнту щодо контракту, закінчити звіт до пʼятниці, і десь на вихідних полагодити велосипед…"
-        className="rounded-lg border border-zinc-300 bg-white p-3 text-base text-zinc-900 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50"
+        className="glass-card rounded-2xl border p-3 text-base text-zinc-900 dark:text-zinc-50"
       />
       {error && <p className="text-sm text-red-500">{error}</p>}
       <button
         type="button"
         onClick={handleSubmit}
         disabled={loading || !text.trim()}
-        className="inline-flex min-h-11 items-center justify-center self-start rounded-full bg-zinc-900 px-5 py-2 text-sm font-medium text-white disabled:opacity-50 dark:bg-zinc-50 dark:text-zinc-900"
+        className="inline-flex min-h-11 items-center justify-center self-start rounded-full bg-accent-solid px-5 py-2 text-sm font-medium text-white disabled:opacity-50"
       >
         {loading ? "Додаю…" : "Додати задачі"}
       </button>

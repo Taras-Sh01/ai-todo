@@ -12,7 +12,7 @@ const TAB_ITEMS = [{ href: "/", label: "Додати" }, ...DESTINATIONS] as con
 
 function linkClasses(active: boolean) {
   return active
-    ? "text-zinc-900 dark:text-zinc-50 font-medium"
+    ? "text-accent font-medium"
     : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100";
 }
 
@@ -39,9 +39,9 @@ export function BottomTabBar() {
   return (
     <nav
       aria-label="Нижня навігація"
-      className="fixed inset-x-0 bottom-0 z-30 bg-background pb-[env(safe-area-inset-bottom)] sm:hidden"
+      className="glass-nav fixed inset-x-0 bottom-0 z-30 pb-[env(safe-area-inset-bottom)] sm:hidden"
     >
-      <div className="flex h-14 border-t border-zinc-200 dark:border-zinc-800">
+      <div className="flex h-14">
         {TAB_ITEMS.map(({ href, label }) => {
           const active = pathname === href;
           return (

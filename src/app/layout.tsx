@@ -41,7 +41,7 @@ export default async function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <header className="border-b border-zinc-200 dark:border-zinc-800">
+        <header className="glass-nav sticky top-0 z-40 border-b border-[var(--glass-nav-border)]">
           <nav
             aria-label="Верхня навігація"
             className="mx-auto flex w-full max-w-6xl items-center gap-4 px-6 py-3"

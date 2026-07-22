@@ -1,7 +1,9 @@
+import Link from "next/link";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { tasks } from "@/db/schema";
 import { TaskCard } from "@/components/TaskCard";
+import { EmptyState } from "@/components/EmptyState";
 import { MONTH_LABELS_GENITIVE, WEEKDAY_LABELS, today as getToday } from "@/lib/dates";
 import { getVisitorId } from "@/lib/visitor";
 
@@ -37,9 +39,11 @@ export default async function TodayPage() {
       </h1>
 
       {sorted.length === 0 ? (
-        <p className="mt-8 text-center text-sm text-zinc-400 dark:text-zinc-500">
-          Немає задач на сьогодні.
-        </p>
+        <EmptyState message="Сьогодні задач немає — гарний день, щоб додати нові.">
+          <Link href="/" className="text-sm font-medium text-accent hover:underline">
+            Додати задачу
+          </Link>
+        </EmptyState>
       ) : (
         <ul className="flex flex-col gap-2">
           {sorted.map((task) => (
