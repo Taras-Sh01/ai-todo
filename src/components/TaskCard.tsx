@@ -28,7 +28,7 @@ export function TaskCard({ task }: { task: Task }) {
             type="submit"
             aria-pressed={task.completed}
             aria-label={task.completed ? "Позначити не виконаним" : "Позначити виконаним"}
-            className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-xs ${
+            className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-xs ${
               task.completed
                 ? "border-emerald-500 bg-emerald-500 text-white"
                 : "border-zinc-300 text-transparent dark:border-zinc-700"
@@ -73,7 +73,7 @@ export function TaskCard({ task }: { task: Task }) {
 
           <div className="mt-2 flex flex-wrap gap-3 text-xs">
             <details className="group">
-              <summary className="cursor-pointer text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200">
+              <summary className="inline-flex min-h-11 cursor-pointer items-center rounded-md px-2 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-200">
                 Редагувати
               </summary>
               <form
@@ -84,14 +84,14 @@ export function TaskCard({ task }: { task: Task }) {
                 <input
                   name="title"
                   defaultValue={task.title}
-                  className="rounded border border-zinc-300 bg-white px-2 py-1 text-sm dark:border-zinc-700 dark:bg-zinc-950"
+                  className="rounded border border-zinc-300 bg-white px-2 py-2 text-base dark:border-zinc-700 dark:bg-zinc-950"
                 />
                 <textarea
                   name="notes"
                   defaultValue={task.notes ?? ""}
                   placeholder="Нотатки"
                   rows={2}
-                  className="rounded border border-zinc-300 bg-white px-2 py-1 text-sm dark:border-zinc-700 dark:bg-zinc-950"
+                  className="rounded border border-zinc-300 bg-white px-2 py-2 text-base dark:border-zinc-700 dark:bg-zinc-950"
                 />
                 <div className="flex gap-2">
                   <input
@@ -100,12 +100,12 @@ export function TaskCard({ task }: { task: Task }) {
                     defaultValue={task.estimateMinutes ?? ""}
                     placeholder="хв"
                     min={0}
-                    className="w-20 rounded border border-zinc-300 bg-white px-2 py-1 text-sm dark:border-zinc-700 dark:bg-zinc-950"
+                    className="w-20 rounded border border-zinc-300 bg-white px-2 py-2 text-base dark:border-zinc-700 dark:bg-zinc-950"
                   />
                   <select
                     name="priority"
                     defaultValue={task.priority}
-                    className="rounded border border-zinc-300 bg-white px-2 py-1 text-sm dark:border-zinc-700 dark:bg-zinc-950"
+                    className="rounded border border-zinc-300 bg-white px-2 py-2 text-base dark:border-zinc-700 dark:bg-zinc-950"
                   >
                     <option value="low">Низький</option>
                     <option value="medium">Середній</option>
@@ -114,7 +114,7 @@ export function TaskCard({ task }: { task: Task }) {
                 </div>
                 <button
                   type="submit"
-                  className="self-start rounded bg-zinc-900 px-3 py-1 text-white dark:bg-zinc-50 dark:text-zinc-900"
+                  className="inline-flex min-h-11 items-center justify-center self-start rounded bg-zinc-900 px-3 py-1 text-white dark:bg-zinc-50 dark:text-zinc-900"
                 >
                   Зберегти
                 </button>
@@ -122,7 +122,7 @@ export function TaskCard({ task }: { task: Task }) {
             </details>
 
             <details className="group">
-              <summary className="cursor-pointer text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200">
+              <summary className="inline-flex min-h-11 cursor-pointer items-center rounded-md px-2 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-200">
                 Перенести
               </summary>
               <form
@@ -134,11 +134,11 @@ export function TaskCard({ task }: { task: Task }) {
                   type="date"
                   name="date"
                   required
-                  className="rounded border border-zinc-300 bg-white px-2 py-1 text-sm dark:border-zinc-700 dark:bg-zinc-950"
+                  className="rounded border border-zinc-300 bg-white px-2 py-2 text-base dark:border-zinc-700 dark:bg-zinc-950"
                 />
                 <button
                   type="submit"
-                  className="rounded bg-zinc-900 px-3 py-1 text-white dark:bg-zinc-50 dark:text-zinc-900"
+                  className="inline-flex min-h-11 items-center justify-center rounded bg-zinc-900 px-3 py-1 text-white dark:bg-zinc-50 dark:text-zinc-900"
                 >
                   Перенести
                 </button>
@@ -149,7 +149,7 @@ export function TaskCard({ task }: { task: Task }) {
               <input type="hidden" name="taskId" value={task.id} />
               <button
                 type="submit"
-                className="text-zinc-400 hover:text-red-500 dark:text-zinc-500 dark:hover:text-red-400"
+                className="inline-flex min-h-11 items-center rounded-md px-2 text-zinc-400 hover:bg-zinc-100 hover:text-red-500 dark:text-zinc-500 dark:hover:bg-zinc-900 dark:hover:text-red-400"
               >
                 Видалити
               </button>

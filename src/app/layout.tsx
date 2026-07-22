@@ -1,7 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
 import { getVisitorId } from "@/lib/visitor";
+import { BottomTabBar, TopNavLinks } from "@/components/SiteNav";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -19,6 +20,14 @@ export const metadata: Metadata = {
   description: "AI-планер задач: диктуй або пиши, він побудує план на день і тиждень.",
 };
 
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+  ],
+  viewportFit: "cover",
+};
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -33,25 +42,17 @@ export default async function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <header className="border-b border-zinc-200 dark:border-zinc-800">
-          <nav className="mx-auto flex w-full max-w-6xl items-center gap-4 px-6 py-3">
+          <nav
+            aria-label="Верхня навігація"
+            className="mx-auto flex w-full max-w-6xl items-center gap-4 px-6 py-3"
+          >
             <Link
               href="/"
               className="text-sm font-semibold text-zinc-900 dark:text-zinc-50"
             >
               AI Todo
             </Link>
-            <Link
-              href="/today"
-              className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
-            >
-              Сьогодні
-            </Link>
-            <Link
-              href="/upcoming"
-              className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
-            >
-              Найближчі
-            </Link>
+            <TopNavLinks />
             {visitorId && (
               <span
                 className="ml-auto text-xs text-zinc-400 dark:text-zinc-600"
@@ -62,7 +63,10 @@ export default async function RootLayout({
             )}
           </nav>
         </header>
-        <div className="flex flex-1 flex-col">{children}</div>
+        <div className="flex flex-1 flex-col pb-[calc(3.5rem+env(safe-area-inset-bottom))] sm:pb-0">
+          {children}
+        </div>
+        <BottomTabBar />
       </body>
     </html>
   );
