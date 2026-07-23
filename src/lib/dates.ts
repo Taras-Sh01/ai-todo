@@ -43,6 +43,11 @@ export const WEEKDAY_LABELS = [
   "субота",
 ];
 
+// Standard Ukrainian short weekday forms — NOT simply the first two letters
+// of WEEKDAY_LABELS (that would give "п'" for п'ятниця instead of "Пт").
+// Indexed the same way as WEEKDAY_LABELS (Sun=0, matching Date#getUTCDay).
+export const WEEKDAY_SHORT_LABELS = ["Нд", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"];
+
 // Resolves a recurring/unanchored weekday name (e.g. from a phrase like
 // "щопонеділка" with no calendar date attached) to the nearest date on or
 // after `from` that falls on that weekday — `from` itself if it already
@@ -69,3 +74,28 @@ export const MONTH_LABELS_GENITIVE = [
   "листопада",
   "грудня",
 ];
+
+// Nominative case — for standalone "Місяць Рік" headers (calendar view),
+// unlike MONTH_LABELS_GENITIVE above which only fits after a day number.
+export const MONTH_LABELS = [
+  "Січень",
+  "Лютий",
+  "Березень",
+  "Квітень",
+  "Травень",
+  "Червень",
+  "Липень",
+  "Серпень",
+  "Вересень",
+  "Жовтень",
+  "Листопад",
+  "Грудень",
+];
+
+// month is 1-12. Delta can push past year boundaries in either direction —
+// relies on Date's own month-overflow normalization rather than hand-rolled
+// wraparound math.
+export function shiftMonth(year: number, month: number, delta: number): { year: number; month: number } {
+  const d = new Date(Date.UTC(year, month - 1 + delta, 1));
+  return { year: d.getUTCFullYear(), month: d.getUTCMonth() + 1 };
+}
