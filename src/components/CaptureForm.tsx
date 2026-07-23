@@ -1,14 +1,69 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { saveTasks } from "@/app/actions";
+import { useSpeechRecognition } from "@/lib/useSpeechRecognition";
+
+// Splices a dictated session's transcript onto whatever was already in the
+// textarea when recording started, without doubling up whitespace.
+function joinDictation(base: string, session: string): string {
+  const trimmedBase = base.replace(/\s+$/, "");
+  if (!trimmedBase) return session;
+  if (!session) return trimmedBase;
+  return `${trimmedBase} ${session}`;
+}
+
+function MicIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <rect x="9" y="2" width="6" height="11" rx="3" />
+      <path d="M5 10v1a7 7 0 0014 0v-1M12 18v4M8 22h8" />
+    </svg>
+  );
+}
 
 export function CaptureForm() {
   const router = useRouter();
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const baseTextRef = useRef("");
+
+  const handleSpeechResult = useCallback((session: string) => {
+    setText(joinDictation(baseTextRef.current, session));
+  }, []);
+
+  const handleSpeechError = useCallback((message: string) => {
+    setError(message);
+  }, []);
+
+  const {
+    supported: speechSupported,
+    listening,
+    start: startListening,
+    stop: stopListening,
+  } = useSpeechRecognition({ onResult: handleSpeechResult, onError: handleSpeechError });
+
+  function handleMicClick() {
+    if (listening) {
+      stopListening();
+      return;
+    }
+    setError(null);
+    baseTextRef.current = text;
+    startListening();
+  }
 
   async function handleSubmit() {
     if (!text.trim()) return;
@@ -45,13 +100,30 @@ export function CaptureForm() {
         дні (будні, з урахуванням завантаженості) і одразу додасть у розклад.
         Поправити щось завжди можна в «Найближчі».
       </p>
-      <textarea
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        rows={6}
-        placeholder="Наприклад: завтра подзвонити клієнту щодо контракту, закінчити звіт до пʼятниці, і десь на вихідних полагодити велосипед…"
-        className="glass-card rounded-2xl border p-3 text-base text-zinc-900 dark:text-zinc-50"
-      />
+      <div className="relative">
+        <textarea
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          rows={6}
+          placeholder="Наприклад: завтра подзвонити клієнту щодо контракту, закінчити звіт до пʼятниці, і десь на вихідних полагодити велосипед…"
+          className="glass-card w-full rounded-2xl border p-3 pr-14 text-base text-zinc-900 dark:text-zinc-50"
+        />
+        {speechSupported && (
+          <button
+            type="button"
+            onClick={handleMicClick}
+            aria-label={listening ? "Зупинити диктування" : "Диктувати голосом"}
+            title={listening ? "Зупинити диктування" : "Диктувати голосом"}
+            className={`absolute bottom-3 right-3 inline-flex h-11 w-11 items-center justify-center rounded-full transition-colors ${
+              listening
+                ? "animate-mic-pulse bg-red-500 text-white"
+                : "text-zinc-500 hover:bg-black/5 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-white/5 dark:hover:text-zinc-100"
+            }`}
+          >
+            <MicIcon />
+          </button>
+        )}
+      </div>
       {error && <p className="text-sm text-red-500">{error}</p>}
       <button
         type="button"
